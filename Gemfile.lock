@@ -1,10 +1,7 @@
 PATH
   remote: .
   specs:
-    active_tree (0.3)
-      activerecord (~> 6.0)
-      jwt (~> 2.2.3)
-      pg_ltree (~> 1.1.8)
+    active_tree (0.3.3)
 
 GEM
   remote: https://rubygems.org/
@@ -60,4 +57,4 @@ DEPENDENCIES
   rspec (~> 3.0)
 
 BUNDLED WITH
-   2.2.29
+   2.2.32
