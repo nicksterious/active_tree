@@ -1,5 +1,3 @@
-[![Tests](https://github.com/nicksterious/active_tree/actions/workflows/ci.yml/badge.svg)](https://github.com/nicksterious/active_tree/actions/workflows/ci.yml) [![Ruby Gem](https://github.com/nicksterious/active_tree/actions/workflows/rubygems.yml/badge.svg)](https://github.com/nicksterious/active_tree/actions/workflows/rubygems.yml) [![Gem Version](https://badge.fury.io/rb/active_tree.svg)](https://badge.fury.io/rb/active_tree) 
-
 # ActiveTree
 
 This gem implements a denormalized database model for tree data backed up by the Postgres LTREE extension.
