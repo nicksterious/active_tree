@@ -1,0 +1,18 @@
+# the main table will be called "active_tree_models"
+# partitions will be called "active_tree_models_X" where X is the owner object ID
+table_name: "active_tree_models"
+
+# create PG roles for postgrest: anon and owner-specific roles
+create_postgrest_roles: true
+
+# on owner removal, detach the partition but preserve the table and data, or destroy the partition and data
+# if you choose to detach and preserve, in order to avoid table name collisions, make sure owner IDs are not reused
+destroy_partition_on_owner_destroy: true
+
+# jwt secret required for postgrest role switching
+jwt_secret: "supersecret"
+jwt_encryption: "HS256"
+
+# suffix postgres roles with a random string 
+# to avoid collisions between other LCA installations in other apps using same db server
+owner_role_suffix: "changeme"

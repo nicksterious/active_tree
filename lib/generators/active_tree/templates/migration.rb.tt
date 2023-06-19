@@ -1,0 +1,89 @@
+class <%= migration_class_name %> < ActiveRecord::Migration<%= migration_version %>
+  def change
+
+    # enable ltree extension
+    begin
+	execute "create extension ltree"
+    rescue
+	p "LTREE was already enabled"
+    end
+    
+
+    # create the main table as set up within ACTIVE_TREE_OPTIONS[:table_name]
+    execute <<-SQL
+    create table #{ ACTIVE_TREE_OPTIONS[:table_name] } (
+	id serial,
+
+	owner_id integer,
+	owner_type character varying,
+	
+	status integer,
+
+	data_external_id character varying,
+	data_provider character varying,
+
+	type character varying,
+	name text,
+
+	parent_entity_id integer,
+	parent_entity_type character varying,
+
+	path ltree,
+    	path_slug text,
+    	
+    	metadata_inline jsonb,
+
+	created_at timestamp(6) without time zone not null,
+	updated_at timestamp(6) without time zone not null,
+
+	primary key (id, owner_id)
+    ) partition by list(owner_id)
+SQL
+
+
+    # add indexes
+    add_index ACTIVE_TREE_OPTIONS[:table_name], :id
+    add_index ACTIVE_TREE_OPTIONS[:table_name], :owner_id
+    add_index ACTIVE_TREE_OPTIONS[:table_name], :type
+    add_index ACTIVE_TREE_OPTIONS[:table_name], :parent_entity_id
+
+    # next two indexes unfortunately can't be unique since a cycle can appear several times under an owner
+    add_index ACTIVE_TREE_OPTIONS[:table_name], :path, using: :gist
+    add_index ACTIVE_TREE_OPTIONS[:table_name], [:data_provider, :data_external_id]
+
+
+    # create an "others" partition for when the owner is undefined/unknown? just in case / may help in some edge cases
+    execute "CREATE TABLE #{ACTIVE_TREE_OPTIONS[:table_name]}_others PARTITION OF #{ACTIVE_TREE_OPTIONS[:table_name]} DEFAULT"
+
+	execute "create index index_others_by_id on #{ACTIVE_TREE_OPTIONS[:table_name]}_others (id)"
+	execute "create index index_others_by_owner_id on #{ACTIVE_TREE_OPTIONS[:table_name]}_others (owner_id)"
+	execute "create index index_others_by_type on #{ACTIVE_TREE_OPTIONS[:table_name]}_others (type)"
+	execute "create index index_others_by_parent_entity_id on #{ACTIVE_TREE_OPTIONS[:table_name]}_others (parent_entity_id)"
+	execute "create index index_others_by_path on #{ACTIVE_TREE_OPTIONS[:table_name]}_others using gist (path)"
+	execute "create index index_others_by_data_provider_and_data_external_id on #{ACTIVE_TREE_OPTIONS[:table_name]}_others (data_provider, data_external_id)"
+
+    # when postgrest is enabled...
+    if ACTIVE_TREE_OPTIONS[:create_postgrest_roles]
+    	# create postgrest anon user with no privs
+    	# postgrest may pass an user's role using JWT
+    	execute "drop role if exists postgrest_anon"
+    	execute "create role postgrest_anon nologin"
+    	execute "grant postgrest_anon to #{ ACTIVE_TREE_OPTIONS[:database_user] }"
+    end
+
+
+
+
+    # metadata table
+    create_table "#{ ACTIVE_TREE_OPTIONS[:table_name] }_metadata" do |t|
+	t.string :model_type
+	t.integer :model_id
+	t.string :key
+	t.text :value
+	
+	t.timestamps
+    end
+    add_index "#{ ACTIVE_TREE_OPTIONS[:table_name] }_metadata", [ :model_type, :model_id ]
+    add_index "#{ ACTIVE_TREE_OPTIONS[:table_name] }_metadata", [ :key ]
+  end
+end

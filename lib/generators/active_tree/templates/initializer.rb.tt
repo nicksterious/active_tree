@@ -1,0 +1,17 @@
+ACTIVE_TREE_OPTIONS ||= begin
+    path = Rails.root.join("config", "active_tree.yml").to_s
+    if File.exist?(path)
+        YAML.load( ERB.new(File.read(path)).result ).deep_symbolize_keys
+    else
+        {
+            table_name: "active_tree_models",
+            create_postgrest_roles: true,
+            jwt_secret: "supersecret",
+            jwt_encryption: "HS256",
+            destroy_partition_on_owner_destroy: true,
+            owner_role_suffix: "changeme"
+        }
+    end
+end.merge({
+    database_user: Rails.application.config.database_configuration[ Rails.env ].deep_symbolize_keys[:username]
+})
