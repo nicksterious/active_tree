@@ -114,3 +114,6 @@ Bug reports, pull requests and feature suggestions are welcome on GitHub at http
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
+## Production
+
+This gem is tested in production. We use this gem at [Start a sportsbook](https://www.start-sportsbook.com) and [sportsbook software](https://www.sportsbook-software.com) to store complex hierarchical sports market data. Updates are handled in realtime using postgres_notifier's NOTIFY/LISTEN pattern and published to thousands of clients on hundreds of sports and gaming websites.
